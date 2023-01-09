@@ -86,15 +86,15 @@ func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 				}
 			case 0x11:
 				if debug {
-					fmt.Printf("Debug Version Tag: %d\n",ByteToUint32(tagarr[i].Value))
+					fmt.Printf("Debug Version Tag: %d\n",util.ByteToUint32(tagarr[i].Value))
 				}
 			case 0x20:
 				if debug {
-					fmt.Printf("Debug Flags Tag: %b\n",ByteToUint32(tagarr[i].Value))
+					fmt.Printf("Debug Flags Tag: %b\n",util.ByteToUint32(tagarr[i].Value))
 				}
 			case 0x0f:
 				if debug {
-					fmt.Printf("Debug Port Tag: %d\n",ByteToUint32(tagarr[i].Value))
+					fmt.Printf("Debug Port Tag: %d\n",util.ByteToUint32(tagarr[i].Value))
 				}
 			case 0x60:
 				if debug {
