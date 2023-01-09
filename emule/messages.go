@@ -54,21 +54,21 @@ func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 	hashsize := int(buf[dataindex])
 	dataindex+=1
 	if debug {
-		fmt.Printf("Hash size", hashsize)
-		fmt.Printf("Hash", buf[dataindex:dataindex+hashsize])
+		fmt.Println("Hash size", hashsize)
+		fmt.Println("Hash", buf[dataindex:dataindex+hashsize])
 	}
 	dataindex+=hashsize
 	if debug {
-		fmt.Printf("clientid", buf[dataindex:dataindex+4])
-		fmt.Printf("tcpport", buf[dataindex+4:dataindex+4+2])
+		fmt.Println("clientid", buf[dataindex:dataindex+4])
+		fmt.Println("tcpport", buf[dataindex+4:dataindex+4+2])
 	}
 	dataindex+=4
 	dataindex+=2
 	if debug {
-		fmt.Printf("tag count", buf[dataindex:dataindex+4])
+		fmt.Println("tag count", buf[dataindex:dataindex+4])
 	}
 	dataindex+=4
 	if debug {
-		fmt.Printf("all else (p2phello)", buf[dataindex:len(buf)])
+		fmt.Println("all else (p2phello)", buf[dataindex:len(buf)])
 	}
 }
