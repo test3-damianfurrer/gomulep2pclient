@@ -2,7 +2,7 @@ package emule
 
 import (
 	"fmt"
-	util "github.com/AltTechTools/gomule-tst/emule@SockSrvClient"
+	util "github.com/AltTechTools/gomule-SockSrvClient/emule"
 	"net"
 	libdeflate "github.com/4kills/go-libdeflate/v2" //libdeflate.Compressor
 )
