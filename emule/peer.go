@@ -5,7 +5,7 @@ import (
 	"io"
 	"net"
 	util "github.com/AltTechTools/gomule-tst/emule"
-	"time"
+	//"time"
 	"errors"
 	//"github.com/test3-damianfurrer/gomule/tree/sharedtest/emule"
 	libdeflate "github.com/4kills/go-libdeflate/v2"
@@ -45,7 +45,7 @@ type PeerClient struct {
 
 func NewPeerInstance(server string, port int, debug bool) *Peer {
 	return &Peer{
-		Server:   server,
+		Host:   server,
 		Port:     port,
 		Username: "gomuleclientuser",
 		Debug:   debug}
@@ -159,6 +159,7 @@ func (this *Peer) respConn(conn net.Conn) {
 		buf, protocol, err, buflen := this.read(conn)
 		//tst
 		fmt.Println("Protocol",protocol)
+		fmt.Println("Buf len",buflen)
 		if err != nil {
 			if err == io.EOF {
 				if this.Debug {
@@ -220,7 +221,7 @@ func (this *Peer) read(conn net.Conn) (buf []byte, protocol byte, err error, buf
 	if this.Debug {
 		fmt.Printf("DEBUG: selected protocol 0x%02x(by byte 0x%02x)\n", protocol, buf[0])
 	}
-	size := ByteToUint32(buf[1:n])
+	size := util.ByteToUint32(buf[1:n])
 	//if this.Debug {
 	//	fmt.Printf("DEBUG: size %v -> %d\n", buf[1:n], size)
 	//}
