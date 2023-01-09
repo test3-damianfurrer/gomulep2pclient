@@ -6,19 +6,19 @@ import (
 	libdeflate "github.com/4kills/go-libdeflate/v2" //libdeflate.Compressor
 )
 
-func handlePeerMsg(protocol byte,buf []byte, peer *Peer){
+func handlePeerMsg(protocol byte,buf []byte, pc *PeerClient){
     	//0xd4
 	switch protocol {
 		case 0xe3:
-			decodeE3(buf[0],buf[1:len(buf)],peer)
+			decodeE3(buf[0],buf[1:len(buf)],pc)
 		case 0xd4:
-			decodeD4(buf[0],buf[1:len(buf)],peer.DeComp,peer)
+			decodeD4(buf[0],buf[1:len(buf)],pc.DeComp,pc)
 		default:
 			fmt.Println("ERROR: only std 0xE3 protocol supported")
 	}
 }
 
-func decodeD4(btype byte,buf []byte,dc libdeflate.Decompressor, peer *Peer){
+func decodeD4(btype byte,buf []byte,dc libdeflate.Decompressor, pc *PeerClient){
 	fmt.Printf("DEBUG: 0xd4 type 0x%x\n",btype)
 	blen, decompressed, err := dc.Decompress(buf, nil, 1)
 	if err != nil {
@@ -30,7 +30,7 @@ func decodeD4(btype byte,buf []byte,dc libdeflate.Decompressor, peer *Peer){
 	decodeE3(btype,decompressed,peer)
 }
 
-func decodeE3(btype byte,buf []byte, peer *Peer){
+func decodeE3(btype byte,buf []byte, pc *PeerClient){
 	switch btype {
 			/*case 0x38:
 				prcServerTextMsg(buf)
