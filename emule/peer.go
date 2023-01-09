@@ -132,7 +132,7 @@ func (this *Peer) Start() {
 
 func (this *PeerClient) Start() {
 	for {
-		buf, protocol, err, buflen := this.read(conn)
+		buf, protocol, err, buflen := this.read(this.PeerConn) //maybe get this from this instead
 		//tst
 		fmt.Println("Protocol",protocol)
 		fmt.Println("Buf len",buflen)
