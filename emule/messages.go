@@ -64,7 +64,7 @@ func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 	}
 	dataindex+=4
 	dataindex+=2
-	tagcount := int(buf[dataindex:dataindex+4])
+	tagcount := int(util.ByteToUint32(buf[dataindex:dataindex+4]))
 	if debug {
 		fmt.Println("tag count", tagcount)
 	}
