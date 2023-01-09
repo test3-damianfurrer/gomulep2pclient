@@ -8,6 +8,7 @@ import (
 	"time"
 	//"github.com/test3-damianfurrer/gomule/tree/sharedtest/emule"
 	libdeflate "github.com/4kills/go-libdeflate/v2"
+	sam "github.com/eyedeekay/sam3/helper
 )
 
 type Peer struct {
@@ -16,6 +17,7 @@ type Peer struct {
 	Username   string
 	Uuid	   []byte
 	Debug      bool
+	I2P	   bool
 	//Ctcpport   int
 	///ClientConn net.Conn
 	Comp	   libdeflate.Compressor
@@ -82,6 +84,178 @@ func (this *Peer) SetTCPFlags(tcpmap uint32){
 #define SRV_TCPFLG_TYPETAGINTEGER       0x00000080
 #define SRV_TCPFLG_LARGEFILES           0x00000100
 #define SRV_TCPFLG_TCPOBFUSCATION	0x00000400
-		*/
 
+*/
+}
+
+func (this *SockSrv) yoursam() string {
+	return fmt.Sprintf("%s:%d", this.SAM, this.SAMPort)
+}
+
+func (this *SockSrv) Start() {
+	if this.I2P {
+		ln, err := sam.I2PListener("go-imule-servr", this.yoursam(), "go-imule-server")
+		if err != nil {
+			fmt.Println("ERROR:", err.Error())
+			return
+		}
+		this.listener = ln
+		fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
+
+		for {
+			conn, err := this.listener.Accept()
+			if err != nil {
+				fmt.Println("ERROR:", err.Error())
+				continue
+			}
+			go this.respConn(conn)
+		}
+	} else {
+		ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.Host, this.Port))
+		if err != nil {
+			fmt.Println("ERROR:", err.Error())
+			return
+		}
+		this.listener = ln
+		fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
+
+		for {
+			conn, err := this.listener.Accept()
+			if err != nil {
+				fmt.Println("ERROR:", err.Error())
+				continue
+			}
+			go this.respConn(conn)
+		}
+	}
+}
+
+func (this *SockSrv) respConn(conn net.Conn) {
+	//var chigh_id uint32
+	//var cport int16
+	
+	//test
+	var err error
+	uhash := make([]byte, 16)
+	//client := SockSrvClient{Conn: conn}
+	
+	
+	/*client.DeComp, err = libdeflate.NewDecompressor()
+	if err != nil {
+		fmt.Println("ERROR libdeflate Decompressor:", err.Error())
+		return
+	}
+	client.Comp, err = libdeflate.NewCompressor()
+	if err != nil {
+		fmt.Println("ERROR libdeflate Compressor:", err.Error())
+		return
+	}*/
+
+	
+	if this.Debug {
+		fmt.Printf("DEBUG: %v connected\n", conn.RemoteAddr())
+	}
+	for {
+		buf, protocol, err, buflen := this.read(conn)
+		if err != nil {
+			if err == io.EOF {
+				if this.Debug {
+				    fmt.Printf("DEBUG: %v disconnected\n", conn.RemoteAddr())
+				}
+				//logout(uhash, this.Debug, this.db) //logout(chigh_id, cport, this.Debug, this.db)
+			} else if errors.Is(err, net.ErrClosed) {
+				if this.Debug {
+					fmt.Println("DEBUG: conn closed due to invalid client data")
+				}
+			}else {
+				fmt.Println("ERROR: from read:", err.Error())
+			}
+			//client.DeComp.Close()
+			//client.Comp.Close()
+			//client.Conn.Close()
+			return
+		}
+		if this.Debug {
+			fmt.Printf("DEBUG: type 0x%02x\n", buf[0])
+		}
+		/*if buf[0] == 0x01 { //p2p hello
+			uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
+		}
+		*/
+		
+	}
+}
+
+func (this *SockSrv) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
+	//possible protocols:
+	//0xe3 - ed2k
+	//0xc5 - emule
+	//0xd4 -zlib compressed
+	protocol = 0xE3
+	buf = make([]byte, 5)
+	err = nil
+	var n int = 0
+
+	n, err = conn.Read(buf)
+	if err != nil {
+		/*if err != io.EOF {
+			fmt.Println("ERROR:", err.Error())
+			}
+		*/
+		return
+	}
+	if buf[0] == 0xE3 {
+		protocol = 0xE3
+	} else if buf[0] == 0xD4 {
+		protocol = 0xD4
+	} else if buf[0] == 0xC5 {
+		protocol = 0xC5
+	} else {
+		fmt.Printf("ERROR: unsuported protocol 0x%02x\n", protocol)
+		err = errors.New("unsuported protocol")
+		return
+	}
+	if this.Debug {
+		fmt.Printf("DEBUG: selected protocol 0x%02x(by byte 0x%02x)\n", protocol, buf[0])
+	}
+	size := ByteToUint32(buf[1:n])
+	//if this.Debug {
+	//	fmt.Printf("DEBUG: size %v -> %d\n", buf[1:n], size)
+	//}
+	buf = make([]byte, 0)
+	toread := size
+	var tmpbuf []byte
+	for{
+		if toread > 1024  {
+			tmpbuf = make([]byte, 1024)
+		} else {
+			tmpbuf = make([]byte, toread)
+		}
+		n, err = conn.Read(tmpbuf)
+		if err != nil {
+			fmt.Println("ERROR: on read to buf", err.Error())
+			//return
+		}
+		buf = append(buf, tmpbuf[0:n]...)
+		if n < 0 {
+			fmt.Println("WARNING: n (conn.Read) < 0, some problem")
+			n = 0
+		}
+		toread -= uint32(n)
+		if toread <= 0 {
+			break;
+		}
+	}
+	//buf = make([]byte, size)
+	//n, err = conn.Read(buf)
+	//if err != nil {
+	//	fmt.Println("ERROR: on read to buf", err.Error())
+	//	//return
+	//}
+	n = int(size-toread)
+	if this.Debug {
+		fmt.Printf("DEBUG: size %d, n %d\n", size, n)
+	}
+	buflen = n
+	return
 }
