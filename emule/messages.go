@@ -47,3 +47,27 @@ func decodeE3(btype byte,buf []byte, pc *PeerClient){
             	fmt.Printf("ERROR: Msg type 0x%x not supported\n",btype)
         }
 }
+
+func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
+	dataindex:=1
+	hashsize := buf[dataindex]
+	dataindex+=1
+	if debug {
+		fmt.Printf("Hash size", hashsize)
+		fmt.Printf("Hash", buf[dataindex:dataindex+hashsize])
+	}
+	dataindex+=int(hashsize)
+	if debug {
+		fmt.Printf("clientid", buf[dataindex:dataindex+4])
+		fmt.Printf("tcpport", buf[dataindex+4:dataindex+4+2])
+	}
+	dataindex+=4
+	dataindex+=2
+	if debug {
+		fmt.Printf("tag count", buf[dataindex:dataindex+4])
+	}
+	dataindex+=4
+	if debug {
+		fmt.Printf("all else (p2phello)", buf[dataindex:len(buf)])
+	}
+}
