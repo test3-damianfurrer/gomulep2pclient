@@ -2,7 +2,7 @@ package emule
 
 import (
 	"fmt"
-	// "io"
+	"io"
 	"net"
 	util "github.com/AltTechTools/gomule-tst/emule"
 	"time"
