@@ -70,9 +70,9 @@ func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 	}
 	dataindex+=4
 		
-	if debug {
-		fmt.Println("all else (p2phello)", buf[dataindex:len(buf)])
-	}
+	//if debug {
+	//	fmt.Println("all else (p2phello)", buf[dataindex:len(buf)])
+	//}
 	
 	//func ReadTags(pos int, buf []byte, tags int,debug bool)(totalread int, ret []*OneTag){
 	tagsreadb, tagarr := util.ReadTags(dataindex,buf,tagcount,debug)
