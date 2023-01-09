@@ -181,10 +181,11 @@ func (this *Peer) respConn(conn net.Conn) {
 		if this.Debug {
 			fmt.Printf("DEBUG: type 0x%02x\n", buf[0])
 		}
-		/*if buf[0] == 0x01 { //p2p hello
-			uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
+		if buf[0] == 0x01 { //p2p hello
+			//uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
+			p2phello(buf,protocol,conn,this.Debug)
 		}
-		*/
+		
 		
 	}
 }
