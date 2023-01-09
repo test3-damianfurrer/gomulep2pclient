@@ -2,27 +2,31 @@ package emule
 
 import (
 	"fmt"
-	// "io"
+	"io"
 	"net"
 	//util "github.com/AltTechTools/gomule-tst/emule"
 	util "github.com/AltTechTools/gomule-SockSrvClient/emule"
-	"time"
+	//"time"
+	"errors"
 	//"github.com/test3-damianfurrer/gomule/tree/sharedtest/emule"
 	libdeflate "github.com/4kills/go-libdeflate/v2"
 	sam "github.com/eyedeekay/sam3/helper"
 )
 
 type Peer struct {
-	Server     string
+	Host     string
 	Port       int
 	Username   string
 	Uuid	   []byte
 	Debug      bool
 	I2P	   bool
+	SAM      string
+	SAMPort  int
 	//Ctcpport   int
 	///ClientConn net.Conn
-	Comp	   libdeflate.Compressor
-	DeComp	   libdeflate.Decompressor
+	//Comp	   libdeflate.Compressor
+	//DeComp	   libdeflate.Decompressor
+	listener	net.Listener
 	SrvTCPCompression         bool
 	SrvTCPNewTags             bool
 	SrvTCPUnicode             bool
@@ -31,10 +35,18 @@ type Peer struct {
 	SrvTCPLargeFiles          bool
 	SrvTCPObfuscation         bool
 }
+type PeerClient struct {
+	Debug      bool
+	I2P	   bool
+	//Ctcpport   int
+	PeerConn net.Conn
+	Comp	   libdeflate.Compressor
+	DeComp	   libdeflate.Decompressor
+}
 
-func NewPeerInstance(server string, port int, debug bool) *Client {
-	return &Client{
-		Server:   server,
+func NewPeerInstance(server string, port int, debug bool) *Peer {
+	return &Peer{
+		Host:   server,
 		Port:     port,
 		Username: "gomuleclientuser",
 		Debug:   debug}
@@ -89,68 +101,56 @@ func (this *Peer) SetTCPFlags(tcpmap uint32){
 */
 }
 
-func (this *SockSrv) yoursam() string {
+func (this *Peer) yoursam() string {
 	return fmt.Sprintf("%s:%d", this.SAM, this.SAMPort)
 }
 
-func (this *SockSrv) Start() {
+func (this *Peer) Start() {
+	var ln net.Listener
+	var err error
 	if this.I2P {
-		ln, err := sam.I2PListener("go-imule-servr", this.yoursam(), "go-imule-server")
-		if err != nil {
-			fmt.Println("ERROR:", err.Error())
-			return
-		}
-		this.listener = ln
-		fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
-
-		for {
-			conn, err := this.listener.Accept()
-			if err != nil {
-				fmt.Println("ERROR:", err.Error())
-				continue
-			}
-			go this.respConn(conn)
-		}
+		ln, err = sam.I2PListener("go-imule-servr", this.yoursam(), "go-imule-server")
 	} else {
-		ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.Host, this.Port))
+		ln, err = net.Listen("tcp", fmt.Sprintf("%s:%d", this.Host, this.Port))
+	}
+	if err != nil {
+		fmt.Println("ERROR:", err.Error())
+		return
+	}
+	this.listener = ln
+	fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
+
+	for {
+		conn, err := this.listener.Accept()
 		if err != nil {
 			fmt.Println("ERROR:", err.Error())
-			return
+			continue
 		}
-		this.listener = ln
-		fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
-
-		for {
-			conn, err := this.listener.Accept()
-			if err != nil {
-				fmt.Println("ERROR:", err.Error())
-				continue
-			}
-			go this.respConn(conn)
-		}
+		go this.respConn(conn)
 	}
 }
 
-func (this *SockSrv) respConn(conn net.Conn) {
+func (this *Peer) respConn(conn net.Conn) {
 	//var chigh_id uint32
 	//var cport int16
 	
 	//test
 	var err error
-	uhash := make([]byte, 16)
+	//uhash := make([]byte, 16)
 	//client := SockSrvClient{Conn: conn}
+	pc := PeerClient{PeerConn: conn}
 	
 	
-	/*client.DeComp, err = libdeflate.NewDecompressor()
+	pc.DeComp, err = libdeflate.NewDecompressor()
 	if err != nil {
 		fmt.Println("ERROR libdeflate Decompressor:", err.Error())
 		return
 	}
-	client.Comp, err = libdeflate.NewCompressor()
+	pc.Comp, err = libdeflate.NewCompressor()
 	if err != nil {
 		fmt.Println("ERROR libdeflate Compressor:", err.Error())
 		return
-	}*/
+	}
 
 	
 	if this.Debug {
@@ -158,6 +158,9 @@ func (this *SockSrv) respConn(conn net.Conn) {
 	}
 	for {
 		buf, protocol, err, buflen := this.read(conn)
+		//tst
+		fmt.Println("Protocol",protocol)
+		fmt.Println("Buf len",buflen)
 		if err != nil {
 			if err == io.EOF {
 				if this.Debug {
@@ -171,23 +174,24 @@ func (this *SockSrv) respConn(conn net.Conn) {
 			}else {
 				fmt.Println("ERROR: from read:", err.Error())
 			}
-			//client.DeComp.Close()
-			//client.Comp.Close()
-			//client.Conn.Close()
+			pc.DeComp.Close()
+			pc.Comp.Close()
+			pc.PeerConn.Close()
 			return
 		}
 		if this.Debug {
 			fmt.Printf("DEBUG: type 0x%02x\n", buf[0])
 		}
-		/*if buf[0] == 0x01 { //p2p hello
-			uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
+		if buf[0] == 0x01 { //p2p hello
+			//uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
+			p2phello(buf,protocol,conn,this.Debug)
 		}
-		*/
+		
 		
 	}
 }
 
-func (this *SockSrv) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
+func (this *Peer) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
 	//possible protocols:
 	//0xe3 - ed2k
 	//0xc5 - emule
@@ -219,7 +223,7 @@ func (this *SockSrv) read(conn net.Conn) (buf []byte, protocol byte, err error, 
 	if this.Debug {
 		fmt.Printf("DEBUG: selected protocol 0x%02x(by byte 0x%02x)\n", protocol, buf[0])
 	}
-	size := ByteToUint32(buf[1:n])
+	size := util.ByteToUint32(buf[1:n])
 	//if this.Debug {
 	//	fmt.Printf("DEBUG: size %v -> %d\n", buf[1:n], size)
 	//}
