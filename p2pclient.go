@@ -41,6 +41,8 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("use ID buf",uuid_b)
+	peer.Uuid=uuid_b
+	peer.Username=username
 	peer.Start()
 	//client.Uuid=uuid_b
 	//client.Ctcpport=lport
