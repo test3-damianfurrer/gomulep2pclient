@@ -2,7 +2,7 @@ package emule
 
 import (
 	"fmt"
-	//util "github.com/AltTechTools/gomule-tst/emule"
+	util "github.com/AltTechTools/gomule-tst/emule"
 	"net"
 	libdeflate "github.com/4kills/go-libdeflate/v2" //libdeflate.Compressor
 )
@@ -64,11 +64,48 @@ func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 	}
 	dataindex+=4
 	dataindex+=2
+	tagcount := int(buf[dataindex:dataindex+4])
 	if debug {
-		fmt.Println("tag count", buf[dataindex:dataindex+4])
+		fmt.Println("tag count", tagcount)
 	}
 	dataindex+=4
+		
 	if debug {
 		fmt.Println("all else (p2phello)", buf[dataindex:len(buf)])
 	}
+	
+	//func ReadTags(pos int, buf []byte, tags int,debug bool)(totalread int, ret []*OneTag){
+	tagread, tagarr := util.ReadTags(dataindex,buf,tagcount,debug)
+	for i := 0; i < len(tagarr); i++ {
+		switch tagarr[i].NameByte {
+			case 0x1:
+				if tagarr[i].Type == byte(2) {
+					if debug {
+						fmt.Printf("Debug Name Tag: %s\n",tagarr[i].Value)
+					}
+				}
+			case 0x11:
+				if debug {
+					fmt.Printf("Debug Version Tag: %d\n",ByteToUint32(tagarr[i].Value))
+				}
+			case 0x20:
+				if debug {
+					fmt.Printf("Debug Flags Tag: %b\n",ByteToUint32(tagarr[i].Value))
+				}
+			case 0x0f:
+				if debug {
+					fmt.Printf("Debug Port Tag: %d\n",ByteToUint32(tagarr[i].Value))
+				}
+			case 0x60:
+				if debug {
+					fmt.Printf("Debug ipv6 Tag: %d\n",tagarr[i].Value)
+				}
+			default:
+				if debug {
+					fmt.Printf("Warning: unknown tag 0x%x\n",tagarr[i].NameByte)
+					fmt.Println(" ->Value: ",tagarr[i].Value)
+				}
+		}
+	}
+	
 }
