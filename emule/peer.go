@@ -20,8 +20,8 @@ type Peer struct {
 	I2P	   bool
 	//Ctcpport   int
 	///ClientConn net.Conn
-	Comp	   libdeflate.Compressor
-	DeComp	   libdeflate.Decompressor
+	//Comp	   libdeflate.Compressor
+	//DeComp	   libdeflate.Decompressor
 	SrvTCPCompression         bool
 	SrvTCPNewTags             bool
 	SrvTCPUnicode             bool
@@ -29,6 +29,14 @@ type Peer struct {
 	SrvTCPTypeTagInterger     bool
 	SrvTCPLargeFiles          bool
 	SrvTCPObfuscation         bool
+}
+type PeerClient struct {
+	Debug      bool
+	I2P	   bool
+	//Ctcpport   int
+	PeerConn net.Conn
+	Comp	   libdeflate.Compressor
+	DeComp	   libdeflate.Decompressor
 }
 
 func NewPeerInstance(server string, port int, debug bool) *Client {
@@ -88,11 +96,11 @@ func (this *Peer) SetTCPFlags(tcpmap uint32){
 */
 }
 
-func (this *SockSrv) yoursam() string {
+func (this *Peer) yoursam() string {
 	return fmt.Sprintf("%s:%d", this.SAM, this.SAMPort)
 }
 
-func (this *SockSrv) Start() {
+func (this *Peer) Start() {
 	if this.I2P {
 		ln, err := sam.I2PListener("go-imule-servr", this.yoursam(), "go-imule-server")
 		if err != nil {
@@ -138,18 +146,19 @@ func (this *SockSrv) respConn(conn net.Conn) {
 	var err error
 	uhash := make([]byte, 16)
 	//client := SockSrvClient{Conn: conn}
+	pc := PeerClient{Conn: conn}
 	
 	
-	/*client.DeComp, err = libdeflate.NewDecompressor()
+	pc.DeComp, err = libdeflate.NewDecompressor()
 	if err != nil {
 		fmt.Println("ERROR libdeflate Decompressor:", err.Error())
 		return
 	}
-	client.Comp, err = libdeflate.NewCompressor()
+	pc.Comp, err = libdeflate.NewCompressor()
 	if err != nil {
 		fmt.Println("ERROR libdeflate Compressor:", err.Error())
 		return
-	}*/
+	}
 
 	
 	if this.Debug {
@@ -170,9 +179,9 @@ func (this *SockSrv) respConn(conn net.Conn) {
 			}else {
 				fmt.Println("ERROR: from read:", err.Error())
 			}
-			//client.DeComp.Close()
-			//client.Comp.Close()
-			//client.Conn.Close()
+			peer.DeComp.Close()
+			peer.Comp.Close()
+			peer.Conn.Close()
 			return
 		}
 		if this.Debug {
@@ -186,7 +195,7 @@ func (this *SockSrv) respConn(conn net.Conn) {
 	}
 }
 
-func (this *SockSrv) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
+func (this *Peer) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
 	//possible protocols:
 	//0xe3 - ed2k
 	//0xc5 - emule
