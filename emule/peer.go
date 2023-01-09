@@ -6,13 +6,14 @@ import (
 	"net"
 	util "github.com/AltTechTools/gomule-tst/emule"
 	"time"
+	"errors"
 	//"github.com/test3-damianfurrer/gomule/tree/sharedtest/emule"
 	libdeflate "github.com/4kills/go-libdeflate/v2"
 	sam "github.com/eyedeekay/sam3/helper"
 )
 
 type Peer struct {
-	Server     string
+	Host     string
 	Port       int
 	Username   string
 	Uuid	   []byte
@@ -134,9 +135,9 @@ func (this *Peer) respConn(conn net.Conn) {
 	
 	//test
 	var err error
-	uhash := make([]byte, 16)
+	//uhash := make([]byte, 16)
 	//client := SockSrvClient{Conn: conn}
-	pc := PeerClient{Conn: conn}
+	pc := PeerClient{PeerConn: conn}
 	
 	
 	pc.DeComp, err = libdeflate.NewDecompressor()
@@ -156,6 +157,8 @@ func (this *Peer) respConn(conn net.Conn) {
 	}
 	for {
 		buf, protocol, err, buflen := this.read(conn)
+		//tst
+		fmt.Println("Protocol",protocol)
 		if err != nil {
 			if err == io.EOF {
 				if this.Debug {
@@ -169,9 +172,9 @@ func (this *Peer) respConn(conn net.Conn) {
 			}else {
 				fmt.Println("ERROR: from read:", err.Error())
 			}
-			peer.DeComp.Close()
-			peer.Comp.Close()
-			peer.Conn.Close()
+			pc.DeComp.Close()
+			pc.Comp.Close()
+			pc.PeerConn.Close()
 			return
 		}
 		if this.Debug {
