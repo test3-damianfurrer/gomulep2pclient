@@ -18,10 +18,13 @@ type Peer struct {
 	Uuid	   []byte
 	Debug      bool
 	I2P	   bool
+	SAM      string
+	SAMPort  int
 	//Ctcpport   int
 	///ClientConn net.Conn
 	//Comp	   libdeflate.Compressor
 	//DeComp	   libdeflate.Decompressor
+	listener	net.Listener
 	SrvTCPCompression         bool
 	SrvTCPNewTags             bool
 	SrvTCPUnicode             bool
@@ -39,8 +42,8 @@ type PeerClient struct {
 	DeComp	   libdeflate.Decompressor
 }
 
-func NewPeerInstance(server string, port int, debug bool) *Client {
-	return &Client{
+func NewPeerInstance(server string, port int, debug bool) *Peer {
+	return &Peer{
 		Server:   server,
 		Port:     port,
 		Username: "gomuleclientuser",
@@ -101,44 +104,31 @@ func (this *Peer) yoursam() string {
 }
 
 func (this *Peer) Start() {
+	var ln net.Listener
+	var err error
 	if this.I2P {
-		ln, err := sam.I2PListener("go-imule-servr", this.yoursam(), "go-imule-server")
-		if err != nil {
-			fmt.Println("ERROR:", err.Error())
-			return
-		}
-		this.listener = ln
-		fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
-
-		for {
-			conn, err := this.listener.Accept()
-			if err != nil {
-				fmt.Println("ERROR:", err.Error())
-				continue
-			}
-			go this.respConn(conn)
-		}
+		ln, err = sam.I2PListener("go-imule-servr", this.yoursam(), "go-imule-server")
 	} else {
-		ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", this.Host, this.Port))
+		ln, err = net.Listen("tcp", fmt.Sprintf("%s:%d", this.Host, this.Port))
+	}
+	if err != nil {
+		fmt.Println("ERROR:", err.Error())
+		return
+	}
+	this.listener = ln
+	fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
+
+	for {
+		conn, err := this.listener.Accept()
 		if err != nil {
 			fmt.Println("ERROR:", err.Error())
-			return
+			continue
 		}
-		this.listener = ln
-		fmt.Printf("Starting peer %s:%d\n", this.Host, this.Port)
-
-		for {
-			conn, err := this.listener.Accept()
-			if err != nil {
-				fmt.Println("ERROR:", err.Error())
-				continue
-			}
-			go this.respConn(conn)
-		}
+		go this.respConn(conn)
 	}
 }
 
-func (this *SockSrv) respConn(conn net.Conn) {
+func (this *Peer) respConn(conn net.Conn) {
 	//var chigh_id uint32
 	//var cport int16
 	
