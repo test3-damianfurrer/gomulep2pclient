@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"encoding/hex"
 	//"github.com/test3-damianfurrer/gomule/emule"
-	//"github.com/test3-damianfurrer/gomulep2pclient/emule"
+	"github.com/test3-damianfurrer/gomulep2pclient/emule"
 )
 
 var (
@@ -40,6 +40,7 @@ func main() {
 		fmt.Println("provide valid hex")
 		panic(err)
 	}
+	fmt.Println("use ID buf",uuid_b)
 	//client.Uuid=uuid_b
 	//client.Ctcpport=lport
 	//0x6a,0xff,0x9d,0x13,0xba,0x4f,0x4b,0x67,0xaf,0x0c,0xf6,0xa5,0x14,0xc4,0xd4,0x99) //client uuid this.Uuid
