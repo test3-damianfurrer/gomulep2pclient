@@ -3,6 +3,7 @@ package emule
 import (
 	"fmt"
 	//util "github.com/AltTechTools/gomule-tst/emule"
+	"net"
 	libdeflate "github.com/4kills/go-libdeflate/v2" //libdeflate.Compressor
 )
 
@@ -50,13 +51,13 @@ func decodeE3(btype byte,buf []byte, pc *PeerClient){
 
 func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 	dataindex:=1
-	hashsize := buf[dataindex]
+	hashsize := int(buf[dataindex])
 	dataindex+=1
 	if debug {
 		fmt.Printf("Hash size", hashsize)
 		fmt.Printf("Hash", buf[dataindex:dataindex+hashsize])
 	}
-	dataindex+=int(hashsize)
+	dataindex+=hashsize
 	if debug {
 		fmt.Printf("clientid", buf[dataindex:dataindex+4])
 		fmt.Printf("tcpport", buf[dataindex+4:dataindex+4+2])
