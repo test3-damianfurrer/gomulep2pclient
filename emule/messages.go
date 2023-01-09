@@ -27,7 +27,7 @@ func decodeD4(btype byte,buf []byte,dc libdeflate.Decompressor, pc *PeerClient){
 	}
 	fmt.Println("DEBUG: decompressed length:",blen)
 	fmt.Println("DEBUG: decompressed",decompressed[0:30])
-	decodeE3(btype,decompressed,peer)
+	decodeE3(btype,decompressed,pc)
 }
 
 func decodeE3(btype byte,buf []byte, pc *PeerClient){
