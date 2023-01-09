@@ -130,6 +130,42 @@ func (this *Peer) Start() {
 	}
 }
 
+func (this *PeerClient) Start() {
+	for {
+		buf, protocol, err, buflen := this.read(conn)
+		//tst
+		fmt.Println("Protocol",protocol)
+		fmt.Println("Buf len",buflen)
+		if err != nil {
+			if err == io.EOF {
+				if this.Debug {
+				    fmt.Printf("DEBUG: %v disconnected\n", this.PeerConn.RemoteAddr())
+				}
+				//logout(uhash, this.Debug, this.db) //logout(chigh_id, cport, this.Debug, this.db)
+			} else if errors.Is(err, net.ErrClosed) {
+				if this.Debug {
+					fmt.Println("DEBUG: conn closed due to invalid client data")
+				}
+			}else {
+				fmt.Println("ERROR: from read:", err.Error())
+			}
+			this.DeComp.Close()
+			this.Comp.Close()
+			this.PeerConn.Close()
+			return
+		}
+		if this.Debug {
+			fmt.Printf("DEBUG: type 0x%02x\n", buf[0])
+		}
+		if buf[0] == 0x01 { //p2p hello
+			//uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
+			p2phello(buf,protocol,this.PeerConn,this.Debug)
+		}
+		
+		
+	}
+}
+
 func (this *Peer) respConn(conn net.Conn) {
 	//var chigh_id uint32
 	//var cport int16
@@ -151,11 +187,13 @@ func (this *Peer) respConn(conn net.Conn) {
 		fmt.Println("ERROR libdeflate Compressor:", err.Error())
 		return
 	}
-
+	
+	pc.Start()
 	
 	if this.Debug {
 		fmt.Printf("DEBUG: %v connected\n", conn.RemoteAddr())
 	}
+	/*
 	for {
 		buf, protocol, err, buflen := this.read(conn)
 		//tst
@@ -189,9 +227,10 @@ func (this *Peer) respConn(conn net.Conn) {
 		
 		
 	}
+	*/
 }
 
-func (this *Peer) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
+func (this *PeerClient) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
 	//possible protocols:
 	//0xe3 - ed2k
 	//0xc5 - emule
