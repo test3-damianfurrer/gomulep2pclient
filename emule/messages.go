@@ -75,7 +75,10 @@ func p2phello(buf []byte,protocol byte,conn net.Conn,debug bool){
 	}
 	
 	//func ReadTags(pos int, buf []byte, tags int,debug bool)(totalread int, ret []*OneTag){
-	tagread, tagarr := util.ReadTags(dataindex,buf,tagcount,debug)
+	tagsreadb, tagarr := util.ReadTags(dataindex,buf,tagcount,debug)
+	if debug {
+		fmt.Println("Tags read bytes / tags count", tagsreadb,len(tagarr))
+	}
 	for i := 0; i < len(tagarr); i++ {
 		switch tagarr[i].NameByte {
 			case 0x1:
