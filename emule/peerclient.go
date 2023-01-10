@@ -51,7 +51,7 @@ func (this *PeerClient) Start() {
 		}
 		if buf[0] == 0x01 { //p2p hello
 			//uhash = login(buf, protocol, conn, this.Debug, this.db,HighId(this.Host),uint16(this.Port), this.Ssname, this.Ssdesc, this.Ssmsg, this.getTCPFlags())//chigh_id, cport, uhash = login(buf, protocol, conn, this.Debug, this.db)
-			p2phello(buf,protocol,this.PeerConn,this.Debug)
+			this.p2phello(buf,protocol)
 		}
 		
 		
@@ -130,4 +130,81 @@ func (this *PeerClient) read(conn net.Conn) (buf []byte, protocol byte, err erro
 	}
 	buflen = n
 	return
+}
+
+func (this *PeerClient) p2phello(buf []byte,protocol byte){
+	debug:=this.Debug
+	conn:=this.PeerConn
+	dataindex:=1
+	hashsize := int(buf[dataindex])
+	dataindex+=1
+	if debug {
+		fmt.Println("Hash size", hashsize)
+		fmt.Println("Hash", buf[dataindex:dataindex+hashsize])
+	}
+	dataindex+=hashsize
+	if debug {
+		fmt.Println("clientid", buf[dataindex:dataindex+4])
+		fmt.Println("tcpport", buf[dataindex+4:dataindex+4+2])
+	}
+	dataindex+=4
+	dataindex+=2
+	tagcount := int(util.ByteToUint32(buf[dataindex:dataindex+4]))
+	if debug {
+		fmt.Println("tag count", tagcount)
+	}
+	dataindex+=4
+		
+	//if debug {
+	//	fmt.Println("all else (p2phello)", buf[dataindex:len(buf)])
+	//}
+	
+	//func ReadTags(pos int, buf []byte, tags int,debug bool)(totalread int, ret []*OneTag){
+	tagsreadb, tagarr := util.ReadTags(dataindex,buf,tagcount,debug)
+	if debug {
+		fmt.Println("Tags read bytes / tags count", tagsreadb,len(tagarr))
+	}
+	for i := 0; i < len(tagarr); i++ {
+		switch tagarr[i].NameByte {
+			case 0x1:
+				if tagarr[i].Type == byte(2) {
+					if debug {
+						fmt.Printf("Debug Name Tag: %s\n",tagarr[i].Value)
+					}
+				}
+			case 0x11:
+				if debug {
+					fmt.Printf("Debug Version Tag: %d\n",util.ByteToUint32(tagarr[i].Value))
+				}
+			case 0x20:
+				if debug {
+					fmt.Printf("Debug Flags Tag: %b\n",util.ByteToUint32(tagarr[i].Value))
+				}
+			case 0x0f:
+				if debug {
+					fmt.Printf("Debug Port Tag: %d\n",util.ByteToUint32(tagarr[i].Value))
+				}
+			case 0x60:
+				if debug {
+					fmt.Printf("Debug ipv6 Tag: %d\n",tagarr[i].Value)
+				}
+			default:
+				if debug {
+					fmt.Printf("Warning: unknown tag 0x%x\n",tagarr[i].NameByte)
+					fmt.Println(" ->Value: ",tagarr[i].Value)
+				}
+		}
+	}
+	
+	//reply
+	//replyHello(uuid_b []byte, clientid uint32, tcpport uint16, tags *[]util.OneTag, conn net.Conn)
+	var tagarr []*util.OneTag
+	username_b := util.StringToByte("username")
+	tag = &util.OneTag{Type: 2, NameString: "", NameByte: 0x1, Value: username_b, ValueLen: uint16(len(username_b))}
+	tagarr = append(tagarr,tag)
+	tag = &util.OneTag{Type: 3, NameString: "", NameByte: 0x11, Value: util.ByteToUint32(60), ValueLen: uint16(4)}
+	tagarr = append(tagarr,tag)
+	replyHello(this.Peer.Uuid, 0, uint16(this.Peer.Port), &tagarr, conn net.Conn)
+	//test
+	
 }
