@@ -37,7 +37,7 @@ type Peer struct {
 }
 type PeerClient struct {
 	Debug      bool
-	I2P	   bool
+	Peer	*Peer
 	//Ctcpport   int
 	PeerConn net.Conn
 	Comp	   libdeflate.Compressor
@@ -174,7 +174,7 @@ func (this *Peer) respConn(conn net.Conn) {
 	var err error
 	//uhash := make([]byte, 16)
 	//client := SockSrvClient{Conn: conn}
-	pc := PeerClient{PeerConn: conn}
+	pc := PeerClient{PeerConn: conn, Peer: this}
 	
 	
 	pc.DeComp, err = libdeflate.NewDecompressor()
