@@ -10,7 +10,7 @@ import (
 	"errors"
 	//"github.com/test3-damianfurrer/gomule/tree/sharedtest/emule"
 	libdeflate "github.com/4kills/go-libdeflate/v2"
-	sam "github.com/eyedeekay/sam3/helper"
+	//sam "github.com/eyedeekay/sam3/helper"
 )
 
 type PeerClient struct {
