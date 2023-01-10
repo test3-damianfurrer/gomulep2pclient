@@ -35,6 +35,7 @@ type Peer struct {
 	SrvTCPLargeFiles          bool
 	SrvTCPObfuscation         bool
 }
+/*
 type PeerClient struct {
 	Debug      bool
 	Peer	*Peer
@@ -42,7 +43,7 @@ type PeerClient struct {
 	PeerConn net.Conn
 	Comp	   libdeflate.Compressor
 	DeComp	   libdeflate.Decompressor
-}
+}*/
 
 func NewPeerInstance(server string, port int, debug bool) *Peer {
 	return &Peer{
@@ -129,7 +130,7 @@ func (this *Peer) Start() {
 		go this.respConn(conn)
 	}
 }
-
+/*
 func (this *PeerClient) Start() {
 	for {
 		buf, protocol, err, buflen := this.read(this.PeerConn) //maybe get this from this instead
@@ -164,7 +165,7 @@ func (this *PeerClient) Start() {
 		
 		
 	}
-}
+}*/
 
 func (this *Peer) respConn(conn net.Conn) {
 	//var chigh_id uint32
@@ -229,7 +230,7 @@ func (this *Peer) respConn(conn net.Conn) {
 	}
 	*/
 }
-
+/*
 func (this *PeerClient) read(conn net.Conn) (buf []byte, protocol byte, err error, buflen int) {
 	//possible protocols:
 	//0xe3 - ed2k
@@ -242,10 +243,10 @@ func (this *PeerClient) read(conn net.Conn) (buf []byte, protocol byte, err erro
 
 	n, err = conn.Read(buf)
 	if err != nil {
-		/*if err != io.EOF {
+		/if err != io.EOF {
 			fmt.Println("ERROR:", err.Error())
 			}
-		*/
+		//
 		return
 	}
 	if buf[0] == 0xE3 {
@@ -303,3 +304,4 @@ func (this *PeerClient) read(conn net.Conn) (buf []byte, protocol byte, err erro
 	buflen = n
 	return
 }
+*/
