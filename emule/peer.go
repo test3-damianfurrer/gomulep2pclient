@@ -2,12 +2,12 @@ package emule
 
 import (
 	"fmt"
-	"io"
+	//"io"
 	"net"
 	//util "github.com/AltTechTools/gomule-tst/emule"
-	util "github.com/AltTechTools/gomule-SockSrvClient/emule"
+	//util "github.com/AltTechTools/gomule-SockSrvClient/emule"
 	//"time"
-	"errors"
+	//"errors"
 	//"github.com/test3-damianfurrer/gomule/tree/sharedtest/emule"
 	libdeflate "github.com/4kills/go-libdeflate/v2"
 	sam "github.com/eyedeekay/sam3/helper"
