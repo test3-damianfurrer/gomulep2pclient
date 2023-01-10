@@ -174,7 +174,7 @@ func (this *Peer) respConn(conn net.Conn) {
 	var err error
 	//uhash := make([]byte, 16)
 	//client := SockSrvClient{Conn: conn}
-	pc := PeerClient{PeerConn: conn, Peer: this}
+	pc := PeerClient{PeerConn: conn, Peer: this, Debug: this.Debug}
 	
 	
 	pc.DeComp, err = libdeflate.NewDecompressor()
