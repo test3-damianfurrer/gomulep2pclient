@@ -79,5 +79,6 @@ func sendHello(msgtype byte, uuid_b []byte, clientid uint32, tcpport uint16, tag
 	}
 	//data := util.EncodeByteMsg(0xE3,0x01,body)
 	data := util.EncodeByteMsg(0xE3,msgtype,body)
-	conn.Write(data)
+	//conn.Write(data)
+	fmt.Println("DEBUG HELLO:", data) //test
 }
